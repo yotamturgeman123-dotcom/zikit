@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>מבחן הזיקית</title>
+<meta name="description" content="האם העסק שלך שורד שבוע בלעדיך? מבחן של 2 דקות, שלושה תיקונים של 10 דקות, ופרומפט אחד שכותב לך נוהל.">
+<meta property="og:title" content="מבחן הזיקית">
+<meta property="og:description" content="האם העסק שלך שורד שבוע בלעדיך? מבחן של 2 דקות.">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#131a4a">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Miriam+Libre:wght@400;700&family=Rubik:ital,wght@0,400;0,500;0,700;0,900;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* Layout: four full-bleed worlds stacked in the reel's order (night, paper, blueprint, stage),
+     one narrow reading column, a sticky tower beside the test, a branch pinned to the bottom. */
+  --night:#131a4a; --tower:#23409a; --gold:#f5c96b; --paper:#f6eedd; --moon:#f3ecc8;
+  --olive:#6b7f3a; --stamp:#b8321f; --ink:#1d1a16; --sand:#c9b48f;
+  --skin:#8d8f8a; --skin-dark:#666863;
+  --read:"Rubik","Heebo","Arial Hebrew",Arial,sans-serif;
+  --label:"Miriam Libre","Courier New",monospace;
+  color-scheme:only light;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+html{background:var(--night)}
+body{margin:0;background:var(--night);color:var(--paper);font:400 17px/1.6 var(--read);overflow-x:clip}
+body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:60;opacity:.13;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .5 0 0 0 0 .45 0 0 0 0 .4 0 0 0 .9 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E")}
+.wrap{max-width:520px;margin:0 auto;padding:0 18px;position:relative}
+h1,h2,h3,p{margin:0}
+h1,h2,h3{text-wrap:balance;line-height:1.12;font-weight:900}
+h1{font-size:clamp(2.05rem,9.4vw,2.9rem)}
+h2{font-size:clamp(1.7rem,7.6vw,2.3rem)}
+h3{font-size:1.4rem}
+.it{font-style:italic;opacity:.92}
+.n{direction:ltr;unicode-bidi:isolate;display:inline-block}
+.lbl{font:700 .74rem/1.3 var(--label);letter-spacing:.06em}
+section{position:relative;scroll-margin-top:10px}
+:focus-visible{outline:3px solid #fff;outline-offset:3px}
+.w-paper :focus-visible{outline-color:var(--ink)}
+
+/* caption tag, as in the reel: • text • */
+.tag{display:inline-flex;align-items:center;gap:8px;background:var(--paper);color:var(--ink);
+  font:700 .78rem/1 var(--label);padding:7px 10px;border:2px solid var(--ink);border-radius:3px}
+.tag::before,.tag::after{content:"";width:6px;height:6px;border-radius:50%;background:var(--stamp)}
+.tag .rn{font-size:1rem}
+
+/* everything pressable is gold */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;background:var(--gold);color:var(--ink);
+  font:700 1.05rem/1.2 var(--read);padding:14px 20px;border:2.5px solid var(--ink);border-radius:10px;
+  box-shadow:0 4px 0 var(--ink);text-decoration:none;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--ink)}
+.lnk{color:var(--ink);background:var(--gold);padding:1px 7px;border-radius:4px;border:1.5px solid var(--ink);text-decoration:none;font-weight:500}
+
+/* stamp */
+.stamp{display:inline-block;background:var(--paper);color:var(--stamp);font-weight:900;line-height:1.1;
+  padding:10px 18px;border:3px solid var(--stamp);box-shadow:inset 0 0 0 3px var(--paper),inset 0 0 0 5px var(--stamp);transform:rotate(-4deg)}
+.stamp.sm{font-size:.86rem;padding:8px 11px;border-width:2px;box-shadow:inset 0 0 0 2px var(--paper),inset 0 0 0 3.5px var(--stamp)}
+
+/* mechanical counter */
+.ctr{--h:46px;display:inline-flex;direction:ltr;gap:4px;padding:6px;background:#0d0c0a;border:2.5px solid #000;border-radius:8px;vertical-align:middle}
+.tile{position:relative;width:calc(var(--h)*.72);height:var(--h);overflow:hidden;border-radius:4px}
+.tile.w{background:var(--paper);color:var(--stamp)}
+.tile.r{background:var(--stamp);color:var(--paper)}
+.tile::after{content:"";position:absolute;left:0;right:0;top:50%;height:1.5px;background:rgba(0,0,0,.38)}
+.strip{display:block;transform:translateY(calc(var(--d,0)*-1*var(--h)));transition:transform .75s cubic-bezier(.2,.9,.25,1.12)}
+.strip b{display:block;height:var(--h);font:900 calc(var(--h)*.7)/var(--h) var(--read);text-align:center}
+
+/* tower */
+.twr{--u:9px;--g:4px;display:inline-block;direction:ltr;text-align:center}
+.twr-sign{display:inline-flex;gap:1px;background:var(--ink);padding:2px;border-radius:2px 2px 0 0;margin-bottom:-1px;vertical-align:bottom}
+.twr-sign i{font:700 calc(var(--u)*.82)/1 var(--label);color:var(--paper);background:#322c25;width:calc(var(--u)*.95);height:calc(var(--u)*1.25);display:grid;place-items:center}
+.twr-body{background:var(--tower);border:3px solid var(--ink);padding:calc(var(--u)*.7);display:grid;gap:calc(var(--g)*1.4);border-radius:3px 3px 0 0;justify-items:center}
+.fl{display:grid;grid-template-columns:repeat(5,var(--u));gap:var(--g)}
+.fl b{height:var(--u);background:#13276a;border-radius:1px;transition:background .35s,box-shadow .35s}
+.fl.on b{background:var(--gold);box-shadow:0 0 calc(var(--u)*.9) rgba(245,201,107,.8)}
+.fl b:nth-child(2){transition-delay:.07s}.fl b:nth-child(3){transition-delay:.14s}
+.fl b:nth-child(4){transition-delay:.21s}.fl b:nth-child(5){transition-delay:.28s}
+.twr .ctr{--h:calc(var(--u)*2.1);padding:3px;gap:2px;border-width:2px;border-radius:4px}
+
+/* chameleon */
+.cham{display:block;width:100%;height:auto;overflow:visible}
+.cham .sk{fill:var(--skin);transition:fill .8s}
+.cham .sks{stroke:var(--skin);transition:stroke .8s}
+.cham .dk{fill:var(--skin-dark);transition:fill .8s}
+.cham .pupil{transform:translate(var(--px,0px),var(--py,0px));transition:transform .18s ease-out}
+.cham .eye{transform-box:fill-box;transform-origin:center;animation:blink 6.5s infinite}
+.cham .tail{transform-box:fill-box;transform-origin:10% 40%;animation:sway 5s ease-in-out infinite alternate}
+.cham .leg{transform-box:fill-box;transform-origin:50% 0}
+.cham .pat{opacity:0;transition:opacity .6s}
+.cham .crk{opacity:0;transition:opacity .4s}
+html[data-low="1"] .cham .crk{opacity:1}
+@keyframes blink{0%,95%,100%{transform:scaleY(1)}97%{transform:scaleY(.08)}}
+@keyframes sway{from{transform:rotate(-3deg)}to{transform:rotate(4deg)}}
+@keyframes stepA{from{transform:rotate(-16deg)}to{transform:rotate(16deg)}}
+@keyframes stepB{from{transform:rotate(16deg)}to{transform:rotate(-16deg)}}
+
+/* ───── world 1: night ───── */
+.w-night{background:var(--night)}
+#stars{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+#stars circle{fill:var(--moon)}
+#stars .tw{animation:tw 3.2s ease-in-out infinite alternate}
+@keyframes tw{from{opacity:.25}to{opacity:1}}
+.hero-top{padding-top:26px;position:relative;z-index:2}
+.hero-top h1{margin-top:16px}
+.hero-top .sub{margin-top:12px;font-size:1.08rem;max-width:30ch}
+.scene{position:relative;height:400px;overflow-x:clip;overflow-y:visible;margin-top:6px}
+.moon{position:absolute;top:22px;right:26px;width:62px;height:62px;border-radius:50%;background:var(--moon);
+  box-shadow:0 0 0 14px rgba(243,236,200,.07),0 0 70px 22px rgba(243,236,200,.26)}
+.cloud{position:absolute;height:20px;border-radius:20px;background:#0c1238}
+.cloud.c1{top:66px;right:4px;width:96px}.cloud.c2{top:104px;left:-10px;width:120px;height:24px}.cloud.c3{top:40px;left:70px;width:66px;height:14px}
+.skyline{position:absolute;left:0;right:0;bottom:0;width:100%;height:130px}
+.hero-twr{position:absolute;left:50%;bottom:30px;transform:translateX(-50%);--u:13px;--g:6px}
+.scene .stamp{position:absolute}
+.scene .st1{left:12px;top:148px;transform:rotate(-7deg)}
+.scene .st2{right:14px;top:128px;transform:rotate(5deg)}
+.scene .st3{left:22px;top:232px;transform:rotate(4deg)}
+.hero-cham{position:absolute;right:2px;bottom:2px;width:152px}
+
+.menu{display:grid;gap:12px;padding:26px 0 8px}
+.card{display:grid;grid-template-columns:auto 1fr auto;gap:4px 14px;align-items:center;background:var(--paper);color:var(--ink);
+  border:2.5px solid var(--ink);border-radius:12px;padding:14px;text-decoration:none;box-shadow:0 4px 0 #080b24}
+.card .rn{grid-row:1/3;font:700 2rem/1 var(--label);color:var(--stamp);min-width:1.5em;text-align:center}
+.card .ti{font-weight:900;font-size:1.15rem;line-height:1.2}
+.card .tm{font:700 .72rem/1.3 var(--label);display:block;margin-top:2px;opacity:.75}
+.card .de{grid-column:2;font-size:.94rem;line-height:1.4}
+.card .go{grid-row:1/3;grid-column:3;width:38px;height:38px;border-radius:50%;background:var(--gold);border:2.5px solid var(--ink);display:grid;place-items:center}
+
+.part-head{padding-top:44px;display:grid;gap:12px;justify-items:start}
+.test{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;margin-top:22px;align-items:start}
+.qs{display:grid;gap:9px;list-style:none;margin:0;padding:0}
+.q{display:grid;grid-template-columns:auto minmax(0,1fr);gap:10px;padding:11px 10px;border:2px solid rgba(246,238,221,.2);border-radius:10px;
+  cursor:pointer;transition:background .3s,border-color .3s;-webkit-tap-highlight-color:transparent}
+.q input,.step input{position:absolute;opacity:0;width:1px;height:1px;margin:0}
+.q .win{position:relative;width:25px;height:25px;margin-top:2px;border:2.5px solid var(--gold);background:#0c1238;border-radius:4px;transition:background .3s,box-shadow .3s}
+.q .win::before,.q .win::after{content:"";position:absolute;background:var(--gold);opacity:.55}
+.q .win::before{left:50%;top:0;bottom:0;width:2px;margin-left:-1px}
+.q .win::after{top:50%;left:0;right:0;height:2px;margin-top:-1px}
+.q input:checked+.win{background:var(--gold);box-shadow:0 0 16px rgba(245,201,107,.85)}
+.q input:checked+.win::before,.q input:checked+.win::after{background:var(--ink);opacity:.5}
+.q input:focus-visible+.win{outline:3px solid #fff;outline-offset:3px}
+.q.on{background:rgba(245,201,107,.1);border-color:var(--gold)}
+.q .no{font:700 .7rem/1 var(--label);opacity:.6;display:block;margin-bottom:3px}
+.q .tx{font-size:.98rem;line-height:1.42;font-weight:500}
+.q .hint{display:block;font-size:.84rem;font-weight:400;opacity:.72;margin-top:2px}
+.twr-col{position:sticky;top:14px;padding-top:2px}
+
+.result{margin-top:30px;padding:22px 16px 26px;border:2px dashed rgba(246,238,221,.35);border-radius:14px;display:grid;gap:16px;justify-items:center;text-align:center}
+.result .row{display:flex;align-items:center;gap:14px;flex-wrap:wrap;justify-content:center}
+.result .of{font:700 .9rem/1 var(--label)}
+.verdict{min-height:58px;display:grid;place-items:center}
+.verdict .stamp{font-size:1.5rem}
+.verdict .stamp.blank{background:transparent;color:rgba(246,238,221,.5);border:3px dashed rgba(246,238,221,.4);box-shadow:none}
+.land{animation:land .5s cubic-bezier(.2,1.5,.4,1) both}
+@keyframes land{from{transform:rotate(-14deg) scale(2.3);opacity:0}to{transform:rotate(-4deg) scale(1);opacity:1}}
+.tiers{list-style:none;margin:0;padding:0;display:grid;gap:8px;width:100%;text-align:start}
+.tiers li{padding:10px 12px;border-radius:10px;border:2px solid rgba(246,238,221,.16);opacity:.72;transition:opacity .4s,background .4s,border-color .4s;font-size:.95rem;line-height:1.5}
+.tiers li b{display:block;font-weight:900}
+.tiers li .rg{font:700 .72rem/1 var(--label);opacity:.8}
+.tiers li.act{opacity:1;background:var(--paper);color:var(--ink);border-color:var(--ink)}
+.tiers li.act b{color:var(--stamp)}
+.honest{font-size:.96rem;text-align:start;border-inline-start:4px solid var(--gold);padding-inline-start:12px}
+.torn{display:block;width:100%;height:30px;margin-top:44px}
+
+/* ───── world 2: paper ───── */
+.w-paper{background:var(--paper);color:var(--ink);padding-bottom:50px}
+.w-paper .part-head{padding-top:28px}
+.w-paper .tag{background:var(--ink);color:var(--paper)}
+.fixes{display:grid;gap:26px;margin-top:24px}
+.fix{position:relative;background:#fffaf0;border:2.5px solid var(--ink);border-radius:6px;padding:18px 16px 16px;display:grid;gap:14px;box-shadow:5px 6px 0 rgba(29,26,22,.9)}
+.fix:nth-child(odd){transform:rotate(-.6deg)}.fix:nth-child(even){transform:rotate(.5deg)}
+.fix-head{display:flex;gap:14px;align-items:center}
+.fix-head svg{width:62px;height:62px;flex:none}
+.fix-head .lbl{color:var(--stamp)}
+.steps{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.step{display:grid;grid-template-columns:auto minmax(0,1fr);gap:11px;align-items:start;cursor:pointer;padding:6px 4px;border-radius:8px;-webkit-tap-highlight-color:transparent}
+.step .box{width:28px;height:28px;border:2.5px solid var(--ink);background:rgba(245,201,107,.4);border-radius:6px;display:grid;place-items:center;
+  font:700 .85rem/1 var(--label);transition:background .25s}
+.step .box svg{display:none;width:16px;height:16px}
+.step input:checked+.box{background:var(--gold)}
+.step input:checked+.box svg{display:block}
+.step input:checked+.box i{display:none}
+.step .box i{font-style:normal}
+.step input:focus-visible+.box{outline:3px solid var(--ink);outline-offset:3px}
+.step input:checked~.st{opacity:.55}
+.step .st{font-size:.98rem;line-height:1.5}
+.get,.stuck{padding:11px 13px;border-radius:6px;font-size:.96rem;line-height:1.5}
+.get{background:var(--olive);color:#fbf6e8}
+.stuck{border:2px dashed var(--ink)}
+.stuck q{font-style:italic;quotes:none}
+.get .lbl,.stuck .lbl{display:block;margin-bottom:3px}
+.done{position:absolute;top:-14px;left:-8px;width:52px;height:52px;border-radius:50%;background:var(--paper);color:var(--stamp);
+  border:3px solid var(--stamp);box-shadow:inset 0 0 0 2px var(--paper),inset 0 0 0 4px var(--stamp);display:none;place-items:center;transform:rotate(-12deg)}
+.done svg{width:24px;height:24px}
+.fix.fin .done{display:grid;animation:land2 .45s cubic-bezier(.2,1.5,.4,1) both}
+@keyframes land2{from{transform:rotate(-30deg) scale(2.4);opacity:0}to{transform:rotate(-12deg) scale(1);opacity:1}}
+
+/* ───── world 3: blueprint ───── */
+.w-blue{background-color:var(--tower);color:#fff;padding-bottom:54px;
+  background-image:linear-gradient(rgba(255,255,255,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.08) 1px,transparent 1px);background-size:22px 22px;
+  border-top:3px solid var(--ink)}
+.w-blue .part-head{padding-top:34px}
+.chart{display:block;width:100%;height:auto;margin-top:18px}
+.chart .ln{stroke:#fff;stroke-width:1.4;fill:none;stroke-dasharray:1;stroke-dashoffset:0}
+.chart.pre .ln{stroke-dashoffset:1}
+.chart.in .ln{stroke-dashoffset:0;transition:stroke-dashoffset 1.1s ease-out}
+.chart .nd{fill:none;stroke:#fff;stroke-width:1.6}
+.chart .core{fill:var(--tower);stroke:#fff;stroke-width:2.4}
+.chart .crack{stroke:var(--gold);stroke-width:2.2;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.w-blue .steps{margin-top:18px}
+.w-blue .step .box{border-color:#fff;background:rgba(245,201,107,.25);color:#fff}
+.w-blue .step input:checked+.box{background:var(--gold);color:var(--ink);border-color:var(--ink)}
+.w-blue .step input:focus-visible+.box{outline-color:#fff}
+.sublbl{margin-top:26px;opacity:.85}
+.prompt{position:relative;margin-top:22px;border:2px solid #fff;border-radius:8px;background:rgba(10,20,70,.55);padding:14px}
+.prompt::before,.prompt::after{content:"";position:absolute;width:14px;height:14px;border:2px solid var(--gold)}
+.prompt::before{top:-6px;right:-6px;border-left:0;border-bottom:0}
+.prompt::after{bottom:-6px;left:-6px;border-right:0;border-top:0}
+.copybar{position:sticky;top:10px;z-index:3;display:flex;justify-content:flex-start;margin-bottom:12px}
+#copy.ok{background:#fff}
+.prompt pre{margin:0;font:400 .95rem/1.65 var(--read);white-space:pre-wrap;overflow-wrap:anywhere;direction:rtl;text-align:start}
+.w-blue .get{background:#fff;color:var(--ink);margin-top:20px}
+.w-blue .stuck{border-color:#fff;margin-top:12px}
+
+/* ───── world 4: stage ───── */
+.w-stage{background:#1c0f0c;color:var(--paper);padding-bottom:104px}
+.stage{position:relative;height:330px;overflow:hidden}
+.stage>svg{position:absolute;inset:0;width:100%;height:100%}
+.board{position:absolute;top:58px;left:50%;transform:translateX(-50%);width:min(250px,70%);background:#b98a55;border:3px solid var(--ink);
+  outline:5px solid #6b3f22;border-radius:3px;padding:14px 8px 10px;display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.note{position:relative;background:var(--paper);color:var(--ink);font:700 .68rem/1.25 var(--read);padding:12px 4px 8px;text-align:center;border:1.5px solid var(--ink);min-height:54px;display:grid;place-items:center}
+.note::before{content:"";position:absolute;top:-5px;left:50%;margin-left:-5px;width:10px;height:10px;border-radius:50%;background:var(--stamp);border:1.5px solid var(--ink)}
+.note:nth-child(1){transform:rotate(-3deg)}.note:nth-child(2){transform:rotate(2deg)}.note:nth-child(3){transform:rotate(-1.5deg)}
+.stage-cham{position:absolute;left:50%;bottom:6px;transform:translateX(-50%);width:176px}
+.end{display:grid;gap:18px;justify-items:center;text-align:center;padding-top:24px}
+.end .row{display:flex;align-items:center;gap:12px}
+.end .of{font:700 .9rem/1 var(--label)}
+.end .btn{width:100%;font-size:1.12rem;padding:17px 16px}
+.end .after{font-size:1rem;max-width:32ch}
+.trust{font-size:.86rem;opacity:.8;max-width:36ch;border-top:1px solid rgba(246,238,221,.25);padding-top:16px}
+.sig{font:700 .82rem/1.6 var(--label)}
+
+/* ───── sticky branch ───── */
+.bar{position:fixed;left:0;right:0;bottom:0;z-index:40;background:rgba(20,17,14,.94);border-top:2.5px solid #000;height:56px;padding:0 12px;
+  display:flex;align-items:center;gap:12px}
+.track{position:relative;flex:1;height:100%;min-width:0}
+.branch{position:absolute;left:0;right:0;top:39px;height:8px;background:var(--sand);border:2px solid #000;border-radius:6px}
+.bcrack{position:absolute;top:36px;left:38%;width:14px;height:14px;opacity:0;transition:opacity .4s}
+html[data-low="1"] .bcrack{opacity:1}
+.knot{position:absolute;top:32px;width:22px;height:22px;border-radius:50%;background:var(--gold);color:var(--ink);border:2px solid #000;
+  font:700 .62rem/1 var(--label);display:grid;place-items:center;text-decoration:none}
+.knot::after{content:"";position:absolute;inset:-10px}
+.walker{position:absolute;right:0;top:7px;width:60px;will-change:transform;pointer-events:none}
+.walker.walking .leg.a{animation:stepA .22s linear infinite alternate}
+.walker.walking .leg.b{animation:stepB .22s linear infinite alternate}
+.walker.hop{animation:hop .4s ease-out}
+@keyframes hop{40%{margin-top:-9px}}
+.bar[data-world="night"] .pat-win{opacity:.8}
+.bar[data-world="blue"] .pat-grid{opacity:.85}
+.bar[data-world="stage"] .pat-fold{opacity:.55}
+.bar .ctr{--h:26px;padding:3px;gap:2px;border-radius:5px;flex:none}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+
+@media (min-width:560px){.twr-col .twr{--u:11px;--g:5px}}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important}
+}
+</style>
+</head>
+<body>
+
+<!-- ═════ world 1: night ═════ -->
+<div class="w-night">
+  <section id="top">
+    <svg id="stars" aria-hidden="true"></svg>
+    <div class="wrap hero-top">
+      <span class="tag">זיקית</span>
+      <h1>האם העסק שלך שורד שבוע בלעדיך?</h1>
+      <p class="sub">מבחן של 2 דקות, שלושה תיקונים של 10 דקות, ופרומפט אחד שכותב לך נוהל.</p>
+    </div>
+    <div class="wrap" style="padding:0">
+      <div class="scene" aria-hidden="true">
+        <div class="moon"></div><div class="cloud c1"></div><div class="cloud c2"></div><div class="cloud c3"></div>
+        <svg class="skyline" viewBox="0 0 380 130" preserveAspectRatio="none">
+          <path d="M0 130V70h22V50h30v26h20V38h26v40h18V60h34v30h70V56h28v22h22V34h30v44h20V62h28v-18h32v86z" fill="#0b1034"/>
+          <g fill="#f5c96b" opacity=".8"><rect x="28" y="58" width="3" height="3"/><rect x="40" y="70" width="3" height="3"/><rect x="78" y="48" width="3" height="3"/><rect x="88" y="62" width="3" height="3"/><rect x="124" y="70" width="3" height="3"/><rect x="258" y="66" width="3" height="3"/><rect x="290" y="44" width="3" height="3"/><rect x="300" y="60" width="3" height="3"/><rect x="336" y="72" width="3" height="3"/><rect x="356" y="54" width="3" height="3"/><rect x="364" y="70" width="3" height="3"/></g>
+          <rect x="0" y="100" width="380" height="30" fill="#080b26"/>
+        </svg>
+        <div class="twr hero-twr" data-tower></div>
+        <span class="stamp sm st1">33 שנה</span>
+        <span class="stamp sm st2">אדם 1</span>
+        <span class="stamp sm st3">4 ימים</span>
+        <div class="hero-cham" data-cham="crown branch"></div>
+      </div>
+    </div>
+    <div class="wrap">
+      <nav class="menu" aria-label="תפריט">
+        <a class="card" href="#part-1"><span class="rn">I</span><span><span class="ti">המבחן</span><span class="tm">2 דקות</span></span>
+          <span class="go"><svg width="16" height="16" viewBox="0 0 16 16"><path d="M8 2v11M3 8.5l5 5 5-5" fill="none" stroke="#1d1a16" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          <span class="de">סמן כל משפט שנכון היום.</span></a>
+        <a class="card" href="#part-2"><span class="rn">II</span><span><span class="ti">שלושה תיקונים</span><span class="tm">10 דקות כל אחד</span></span>
+          <span class="go"><svg width="16" height="16" viewBox="0 0 16 16"><path d="M8 2v11M3 8.5l5 5 5-5" fill="none" stroke="#1d1a16" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          <span class="de">דף חירום · מחליף לשבוע · שלושה מספרים</span></a>
+        <a class="card" href="#part-3"><span class="rn">III</span><span><span class="ti">הפרומפט</span><span class="tm">15 דקות</span></span>
+          <span class="go"><svg width="16" height="16" viewBox="0 0 16 16"><path d="M8 2v11M3 8.5l5 5 5-5" fill="none" stroke="#1d1a16" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          <span class="de">תן ל-AI לכתוב לך "נוהל שבוע בלעדיי"</span></a>
+      </nav>
+    </div>
+  </section>
+
+  <section id="part-1" data-world="night">
+    <div class="wrap">
+      <div class="part-head">
+        <span class="tag"><span class="rn">I</span> · 2 דקות</span>
+        <h2>המבחן</h2>
+        <p class="it">סמן כל משפט שנכון היום. לא "בערך" ולא "בקרוב".</p>
+      </div>
+      <div class="test">
+        <ol class="qs" id="qs"></ol>
+        <div class="twr-col" aria-hidden="true"><div class="twr" data-tower></div></div>
+      </div>
+
+      <div class="result" id="result">
+        <p class="lbl">ציון</p>
+        <div class="row"><span class="ctr" data-ctr></span><span class="of">מתוך 10</span></div>
+        <div class="verdict"><span class="stamp blank" id="verdict">?</span></div>
+        <ul class="tiers" id="tiers">
+          <li data-t="0"><span class="rg">0 עד 4</span><b>העסק הוא אתה</b>כרגע כל העסק עובר דרכך. זה לא כישלון, זה שלב. אבל יום אחד רע שלך הוא יום רע של העסק.</li>
+          <li data-t="1"><span class="rg">5 עד 7</span><b>בסיכון</b>יש לך בסיס. אבל שבוע בלעדיך עדיין יעלה כסף. שניים-שלושה תיקונים יעבירו אותך לצד השני.</li>
+          <li data-t="2"><span class="rg">8 עד 10</span><b>חסין</b>העסק שלך יודע לעבוד גם בלעדיך. נשאר לשמור על זה, ולבדוק שוב בעוד חצי שנה.</li>
+        </ul>
+        <p class="honest">ציון נמוך לא אומר שאתה צריך מנכ"ל או צוות. ברוב העסקים הקטנים מספיק לסגור 2 או 3 משפטים מהרשימה כדי להרגיש את ההבדל.</p>
+        <p class="sr" aria-live="polite" id="live"></p>
+      </div>
+    </div>
+    <svg class="torn" viewBox="0 0 380 30" preserveAspectRatio="none" aria-hidden="true"><path d="M0 30V16l14-6 12 8 18-12 16 9 14-7 20 10 16-12 18 9 14-6 20 11 16-10 18 8 16-9 18 10 14-8 20 9 16-11 18 10 14-7 20 8 16-6 14 7 20-5V30z" fill="#f6eedd"/></svg>
+  </section>
+</div>
+
+<!-- ═════ world 2: paper ═════ -->
+<section class="w-paper" id="part-2" data-world="paper">
+  <div class="wrap">
+    <div class="part-head">
+      <span class="tag"><span class="rn">II</span> · 10 דקות כל אחד</span>
+      <h2>שלושה תיקונים</h2>
+    </div>
+    <div class="fixes" id="fixes"></div>
+  </div>
+</section>
+
+<!-- ═════ world 3: blueprint ═════ -->
+<section class="w-blue" id="part-3" data-world="blue">
+  <div class="wrap">
+    <div class="part-head">
+      <span class="tag"><span class="rn">III</span> · 15 דקות</span>
+      <h2>תן ל-AI לכתוב לך "נוהל שבוע בלעדיי"</h2>
+      <p class="it">הוא שואל 5 שאלות, אתה עונה, ויוצא מסמך של עמוד אחד שמותאם לעסק שלך.</p>
+    </div>
+    <svg class="chart" id="chart" viewBox="0 0 380 190" aria-hidden="true"></svg>
+    <p class="lbl sublbl">איך זה הולך</p>
+    <ol class="steps" id="psteps"></ol>
+    <div class="prompt">
+      <div class="copybar"><button class="btn" id="copy" type="button">העתק פרומפט</button></div>
+      <pre id="ptext"></pre>
+    </div>
+    <div class="get"><span class="lbl">מה תקבל</span>מסמך אמיתי של עמוד אחד, שלך.</div>
+    <div class="stuck"><span class="lbl">אם נתקעת</span><q>"זה יצא כללי מדי"</q> ← תגיד לו: "תן דוגמה לכל שורה מהעסק שלי."</div>
+  </div>
+</section>
+
+<!-- ═════ world 4: stage ═════ -->
+<section class="w-stage" id="finale" data-world="stage">
+  <div class="wrap" style="padding:0">
+    <div class="stage" aria-hidden="true">
+      <svg viewBox="0 0 380 330" preserveAspectRatio="xMidYMin slice">
+        <defs><radialGradient id="spot" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#f3ecc8" stop-opacity=".5"/><stop offset="1" stop-color="#f3ecc8" stop-opacity="0"/></radialGradient></defs>
+        <rect width="380" height="330" fill="#2a1410"/>
+        <polygon points="165,0 215,0 330,330 50,330" fill="#f3ecc8" opacity=".13"/>
+        <ellipse cx="190" cy="300" rx="150" ry="34" fill="url(#spot)"/>
+        <rect x="0" y="296" width="380" height="34" fill="#1c0f0c" opacity=".55"/>
+        <g stroke="#1d1a16" stroke-width="3">
+          <path d="M-4 0h76c-4 90 6 190-18 330H-4z" fill="#b8321f"/>
+          <path d="M384 0h-76c4 90-6 190 18 330h58z" fill="#b8321f"/>
+        </g>
+        <g stroke="#7d1f12" stroke-width="3" fill="none" opacity=".9"><path d="M16 0c2 110-2 220-8 330M38 0c2 120 0 220-10 330M58 0c0 110 0 200-14 330M364 0c-2 110 2 220 8 330M342 0c-2 120 0 220 10 330M322 0c0 110 0 200 14 330"/></g>
+        <g fill="#b8321f" stroke="#1d1a16" stroke-width="3"><path d="M-4 -4h388v22c-16 22-48 22-64 0-16 22-48 22-64 0-16 22-48 22-64 0-16 22-48 22-64 0-16 22-48 22-64 0-16 22-48 22-68 0z"/></g>
+      </svg>
+      <div class="board"><span class="note">גבולות ברורים</span><span class="note">מחליף מוגדר</span><span class="note">מערכת שעובדת בלעדיך</span></div>
+      <div class="stage-cham" data-cham="branch"></div>
+    </div>
+  </div>
+  <div class="wrap">
+    <div class="end">
+      <div class="row"><span class="ctr" data-ctr></span><span class="of">מתוך 10</span></div>
+      <a class="btn" id="wa" target="_blank" rel="noopener" href="https://wa.me/972508104505?text=%D7%94%D7%99%D7%99%20%D7%99%D7%95%D7%AA%D7%9D%2C%20%D7%A2%D7%A9%D7%99%D7%AA%D7%99%20%D7%90%D7%AA%20%D7%94%D7%9E%D7%91%D7%97%D7%9F%20%D7%A9%D7%9C%20%D7%94%D7%96%D7%99%D7%A7%D7%99%D7%AA.%20%D7%99%D7%A6%D7%90%20%D7%9C%D7%99%200%20%D7%9E%D7%AA%D7%95%D7%9A%2010.">שלח לי את הציון בוואטסאפ</a>
+      <p class="after">אשלח לך בחזרה את 2 הדברים שהכי שווה לסגור קודם. וואטסאפ: <span class="n">050-810-4505</span></p>
+      <p id="reelrow" hidden><a class="lnk" id="reel" target="_blank" rel="noopener" href="#">חזרה לריל</a></p>
+      <p class="trust">הסיפור בריל נבדק ב-<span class="n">14.11.2026</span> מול הדיווחים בתקשורת. בלי שמות, כי הלקח חשוב מהרכילות.</p>
+      <p class="sig">יותם תורג'מן · <a class="lnk n" target="_blank" rel="noopener" href="https://yotamturgeman.co.il">yotamturgeman.co.il</a></p>
+    </div>
+  </div>
+</section>
+
+<!-- ═════ sticky branch ═════ -->
+<div class="bar" id="bar" data-world="night">
+  <div class="track" id="track">
+    <span class="branch"></span>
+    <svg class="bcrack" viewBox="0 0 14 14" aria-hidden="true"><path d="M5 0l4 4-5 3 5 4-3 3" fill="none" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <a class="knot" href="#part-1" data-k="part-1" aria-label="I · המבחן">I</a>
+    <a class="knot" href="#part-2" data-k="part-2" aria-label="II · שלושה תיקונים">II</a>
+    <a class="knot" href="#part-3" data-k="part-3" aria-label="III · הפרומפט">III</a>
+    <span class="walker" id="walker" data-cham="pat"></span>
+  </div>
+  <span class="ctr" data-ctr aria-hidden="true"></span>
+</div>
+
+<script>
+(function(){
+'use strict';
+var REEL_URL = 'https://www.instagram.com/p/DfvBvh7s5KO/';
+var WA = 'https://wa.me/972508104505?text=';
+var KEY = 'zikit-v1';
+var REDUCED = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+var Q = [
+ ['אם אני נעלם לשבוע בלי טלפון, העסק ממשיך למכור.',''],
+ ['יש מישהו חוץ ממני שיכול לסגור עסקה ולגבות כסף.',''],
+ ['לקוח שפונה מקבל תשובה גם כשאני לא זמין.',''],
+ ['3 התהליכים הכי חשובים כתובים במקום אחד.','(למשל: מכירה, שירות, גבייה)'],
+ ['הסיסמאות והגישות לא נמצאות רק אצלי.','(בנק, אתר, מטא, ספקים, מערכות)'],
+ ['יש מחליף מוגדר לפחות לתפקיד אחד שרק אני עושה היום.',''],
+ ['אני יודע כל שבוע את 3 המספרים של העסק בלי לחפש.','(הכנסות, לידים, רווח)'],
+ ['אף לקוח אחד לא מביא יותר משליש מההכנסות.',''],
+ ['יש כללים ברורים בין החלטות עסקיות לקשרים אישיים.','(משפחה, חברים, עובדים קרובים)'],
+ ['לקחתי השנה שבוע חופש, והעסק לא נפגע.','']
+];
+var TIERS = ['העסק הוא אתה','בסיכון','חסין'];
+var FIXES = [
+ {t:'דף חירום', s:'עמוד אחד שמישהו אחר יכול לפתוח אם אתה לא זמין.',
+  steps:['פתח מסמך אחד ושתף אותו עם אדם אחד שאתה סומך עליו.','כתוב איפה נמצאות הגישות (מנהל סיסמאות, לא הסיסמאות עצמן), ומי 3 אנשי הקשר החשובים.','כתוב 5 שורות: מה חייב לקרות כל יום כדי שהעסק לא ייעצר.'],
+  get:'מישהו אחר יכול להחזיק את העסק שבוע.', q:'"אין לי למי לתת את זה"', a:'התחל מרואה החשבון או מבן משפחה, רק לקריאה.',
+  icon:'<rect x="14" y="8" width="36" height="48" rx="2" fill="#f6eedd" stroke="#1d1a16" stroke-width="3"/><path d="M21 22h22M21 30h22M21 38h14" stroke="#1d1a16" stroke-width="2.5" stroke-linecap="round"/><circle cx="46" cy="48" r="10" fill="#b8321f" stroke="#1d1a16" stroke-width="3"/><path d="M46 42v7M46 53v.5" stroke="#f6eedd" stroke-width="3" stroke-linecap="round"/>'},
+ {t:'מחליף לשבוע', s:'משימה אחת שרק אתה עושה, עוברת למישהו אחר.',
+  steps:['רשום 5 דברים שרק אתה עושה.','בחר את הקל ביותר ללמד.','הקלט את עצמך עושה אותו פעם אחת, ושלח.'],
+  get:'הוכחה שזה אפשרי, ושעה בשבוע שחוזרת אליך.', q:'"אף אחד לא יעשה את זה כמוני"', a:'נכון. <span class="n">80%</span> מספיק למשימה הזאת.',
+  icon:'<rect x="18" y="6" width="28" height="50" rx="5" fill="#23409a" stroke="#1d1a16" stroke-width="3"/><circle cx="32" cy="26" r="8" fill="#b8321f" stroke="#1d1a16" stroke-width="3"/><path d="M26 44h12" stroke="#f6eedd" stroke-width="3" stroke-linecap="round"/><path d="M50 30h10m-4-5 5 5-5 5" fill="none" stroke="#1d1a16" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>'},
+ {t:'שלושה מספרים', s:'הכנסות, לידים, רווח. פעם בשבוע, במקום אחד.',
+  steps:['פתח טבלה עם 3 עמודות.','קבע תזכורת ליום ראשון בבוקר.','מלא 4 שבועות אחורה.'],
+  get:'אתה מפסיק לנהל לפי תחושה, ומישהו אחר יכול לקרוא את המצב בלעדיך.', q:'"אני לא יודע את הרווח"', a:'התחל משני מספרים.',
+  icon:'<rect x="5" y="12" width="54" height="40" rx="4" fill="#0d0c0a" stroke="#1d1a16" stroke-width="3"/><rect x="10" y="18" width="13" height="28" rx="2" fill="#b8321f"/><rect x="25.5" y="18" width="13" height="28" rx="2" fill="#f6eedd"/><rect x="41" y="18" width="13" height="28" rx="2" fill="#b8321f"/><path d="M10 32h44" stroke="#000" stroke-opacity=".4" stroke-width="1.5"/>'}
+];
+var PSTEPS = [`פתח צ'אט חדש ב-Claude או ב-ChatGPT.`,'הדבק את הפרומפט.','ענה בפרטים אמיתיים.'];
+var PROMPT = `עזור לי לכתוב "נוהל שבוע בלעדיי": מסמך של עמוד אחד שמאפשר לעסק שלי לעבוד שבוע בלי שאני זמין.
+
+קודם, תכיר את העסק
+- אם אתה רואה שיחות קודמות שלי או זיכרון, התחל משם. ספר לי בכמה משפטים מה מצאת, ותן לי לתקן.
+- אחר כך שאל אותי עד 5 שאלות, אחת בכל פעם: מה העסק מוכר ולמי, מי עובד איתי, מה רק אני עושה היום, מה חייב לקרות כל יום כדי שייכנס כסף, ומה הדבר שהכי מפחיד אותי שיקרה כשאני לא שם.
+- אם תשובה מעורפלת, בקש דוגמה אמיתית אחת.
+
+אחר כך, תגיד לי מה אתה רואה
+בכנות ובלי לייפות: איפה העסק תלוי רק בי, מה הסיכון הכי גדול, ומה התיקון הכי קל. את הסיכון הגדול תציג כניחוש, לאישור שלי. חכה שאאשר לפני שאתה כותב.
+
+אחר כך, כתוב את הנוהל
+עמוד אחד, בעברית פשוטה, בסדר הזה:
+1. מי מחליף אותי, ובמה בדיוק.
+2. מה חייב לקרות בכל יום, בשורה אחת ליום.
+3. איפה נמצאות הגישות (בלי לכתוב סיסמאות).
+4. שלושת המספרים שבודקים, ומה נחשב חריג.
+5. מה לא עושים בלי לדבר איתי, ואיך משיגים אותי במקרה חירום.
+
+לפני שאתה מוסר
+בדוק שכל שורה היא פעולה שאדם אחר יכול לבצע בלי לשאול אותי. מה שלא, סמן בבירור כ"חסר מידע" ושאל אותי עליו.`;
+
+var $ = function(s,r){return (r||document).querySelector(s)};
+var $$ = function(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))};
+var CHECK = '<svg viewBox="0 0 16 16"><path d="M2.5 8.5l3.5 3.5 7.5-8" fill="none" stroke="#1d1a16" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+/* ── state ── */
+var state = {q:[0,0,0,0,0,0,0,0,0,0], s:{}, touched:false};
+try{
+  var raw = JSON.parse(localStorage.getItem(KEY) || 'null');
+  if(raw && raw.q && raw.q.length === 10){ state.q = raw.q.map(function(v){return v?1:0}); state.s = raw.s || {}; state.touched = !!raw.touched; }
+}catch(e){}
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){} }
+function score(){ return state.q.reduce(function(a,b){return a+b},0); }
+function tierOf(n){ return n <= 4 ? 0 : n <= 7 ? 1 : 2; }
+function waLink(n){ return WA + encodeURIComponent('היי יותם, עשיתי את המבחן של הזיקית. יצא לי ' + n + ' מתוך 10.'); }
+
+/* ── chameleon ── */
+var cid = 0;
+function leg(x, cls){
+  var d = 'M'+x+' 82 L'+(x-4)+' 99';
+  return '<g class="leg '+cls+'"><path d="'+d+'" stroke="#1d1a16" stroke-width="11" stroke-linecap="round"/><path class="sks" d="'+d+'" stroke-width="5" stroke-linecap="round"/>'+
+    '<path d="M'+(x-11)+' 101 L'+(x-4)+' 99 L'+(x+2)+' 103" fill="none" stroke="#1d1a16" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></g>';
+}
+function cham(opt){
+  var id = 'cc' + (cid++), o = opt || '', tail = 'M146 60 C176 52 194 72 184 92 C176 108 152 104 153 90 C154 81 164 80 167 88';
+  return '<svg class="cham" viewBox="0 0 200 120" aria-hidden="true" focusable="false">'+
+   '<defs><clipPath id="'+id+'"><ellipse cx="106" cy="62" rx="46" ry="27"/></clipPath></defs>'+
+   (o.indexOf('branch')>-1 ? '<path d="M6 107H196" stroke="#1d1a16" stroke-width="13" stroke-linecap="round"/><path d="M6 107H196" stroke="#c9b48f" stroke-width="7" stroke-linecap="round"/><path class="crk" d="M104 99l5 5-7 4 6 6" fill="none" stroke="#1d1a16" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>' : '')+
+   '<g class="tail"><path d="'+tail+'" fill="none" stroke="#1d1a16" stroke-width="15" stroke-linecap="round"/><path class="sks" d="'+tail+'" fill="none" stroke-width="9" stroke-linecap="round"/></g>'+
+   leg(92,'b')+leg(138,'a')+
+   '<ellipse class="sk" cx="106" cy="62" rx="48" ry="29" stroke="#1d1a16" stroke-width="4"/>'+
+   '<g clip-path="url(#'+id+')">'+
+     '<g class="dk"><circle cx="95" cy="46" r="3"/><circle cx="110" cy="41" r="3.5"/><circle cx="126" cy="45" r="3"/><circle cx="118" cy="55" r="2.5"/><circle cx="138" cy="53" r="2.5"/><circle cx="102" cy="57" r="2"/></g>'+
+     (o.indexOf('pat')>-1 ?
+      '<g class="pat pat-win" fill="#f5c96b"><rect x="84" y="46" width="7" height="7"/><rect x="98" y="46" width="7" height="7"/><rect x="112" y="46" width="7" height="7"/><rect x="126" y="46" width="7" height="7"/><rect x="140" y="46" width="7" height="7"/><rect x="84" y="62" width="7" height="7"/><rect x="98" y="62" width="7" height="7"/><rect x="112" y="62" width="7" height="7"/><rect x="126" y="62" width="7" height="7"/><rect x="140" y="62" width="7" height="7"/></g>'+
+      '<g class="pat pat-grid" stroke="#fff" stroke-width="1.6"><path d="M70 44H150M70 56H150M70 68H150M70 80H150M82 30V94M96 30V94M110 30V94M124 30V94M138 30V94"/></g>'+
+      '<g class="pat pat-fold" stroke="#b8321f" stroke-width="4"><path d="M84 30V94M98 30V94M112 30V94M126 30V94M140 30V94"/></g>' : '')+
+   '</g>'+
+   leg(80,'a')+leg(126,'b')+
+   '<path class="sk" d="M80 36 L60 14 L50 38 C32 42 22 54 26 66 C30 78 52 84 80 80 Z" stroke="#1d1a16" stroke-width="4" stroke-linejoin="round"/>'+
+   '<path d="M27 67 C38 72 50 72 60 67" fill="none" stroke="#1d1a16" stroke-width="3" stroke-linecap="round"/>'+
+   '<g class="eye"><circle cx="52" cy="54" r="11" fill="#f6eedd" stroke="#1d1a16" stroke-width="3"/><circle class="pupil" cx="52" cy="54" r="4" fill="#1d1a16"/></g>'+
+   (o.indexOf('crown')>-1 ? '<path d="M49 19 L46 4 L55 11 L60 1 L65 11 L74 4 L71 19 Z" fill="#b8321f" stroke="#1d1a16" stroke-width="2.6" stroke-linejoin="round"/>' : '')+
+  '</svg>';
+}
+$$('[data-cham]').forEach(function(el){ el.innerHTML = cham(el.getAttribute('data-cham')); });
+var chams = $$('svg.cham');
+
+/* ── counters, towers ── */
+function ctrHTML(){
+  var ones = ''; for(var i=0;i<10;i++) ones += '<b>'+i+'</b>';
+  return '<span class="tile w"><span class="strip"><b>0</b><b>1</b></span></span><span class="tile r"><span class="strip">'+ones+'</span></span>';
+}
+function floorHTML(n){ return '<div class="fl" data-f="'+n+'"><b></b><b></b><b></b><b></b><b></b></div>'; }
+$$('[data-tower]').forEach(function(el){
+  var h = '<div class="twr-sign">'+'ENVYDIA'.split('').map(function(c){return '<i>'+c+'</i>'}).join('')+'</div><div class="twr-body">';
+  for(var f=10;f>=6;f--) h += floorHTML(f);
+  h += '<span class="ctr" data-ctr></span>';
+  for(f=5;f>=1;f--) h += floorHTML(f);
+  el.innerHTML = h + '</div>';
+});
+$$('[data-ctr]').forEach(function(el){ el.innerHTML = ctrHTML(); });
+
+/* ── stars ── */
+(function(){
+  var s = '', seed = 7;
+  function rnd(){ seed = (seed*9301 + 49297) % 233280; return seed/233280; }
+  for(var i=0;i<54;i++) s += '<circle cx="'+(rnd()*100).toFixed(1)+'%" cy="'+(rnd()*62).toFixed(1)+'%" r="'+(rnd()*1.1+.5).toFixed(2)+'"'+(i%4===0?' class="tw" style="animation-delay:'+(rnd()*3).toFixed(1)+'s"':'')+'/>';
+  $('#stars').innerHTML = s;
+})();
+
+/* ── test list ── */
+$('#qs').innerHTML = Q.map(function(q,i){
+  var no = (i+1 < 10 ? '0' : '') + (i+1);
+  return '<li><label class="q" for="q'+(i+1)+'"><input type="checkbox" id="q'+(i+1)+'" data-q="'+i+'"><span class="win"></span>'+
+    '<span><span class="no n">'+no+'</span><span class="tx">'+q[0]+(q[1] ? '<span class="hint">'+q[1]+'</span>' : '')+'</span></span></label></li>';
+}).join('');
+
+/* ── steps ── */
+function stepsHTML(arr, pre){
+  return arr.map(function(t,i){
+    var id = pre + '-' + (i+1);
+    return '<li><label class="step" for="'+id+'"><input type="checkbox" id="'+id+'" data-s="'+id+'"><span class="box"><i>'+(i+1)+'</i>'+CHECK+'</span><span class="st">'+t+'</span></label></li>';
+  }).join('');
+}
+$('#fixes').innerHTML = FIXES.map(function(f,i){
+  var k = i+1;
+  return '<article class="fix" id="fix-'+k+'" data-fix="s-'+k+'">'+
+    '<span class="done" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="M2.5 8.5l3.5 3.5 7.5-8" fill="none" stroke="#b8321f" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>'+
+    '<div class="fix-head"><svg viewBox="0 0 64 64" aria-hidden="true">'+f.icon+'</svg><div><p class="lbl">תיקון '+k+'</p><h3>'+f.t+'</h3></div></div>'+
+    '<p class="it">'+f.s+'</p>'+
+    '<ol class="steps">'+stepsHTML(f.steps,'s-'+k)+'</ol>'+
+    '<div class="get"><span class="lbl">מה תקבל</span>'+f.get+'</div>'+
+    '<div class="stuck"><span class="lbl">אם נתקעת</span><q>'+f.q+'</q> ← '+f.a+'</div>'+
+  '</article>';
+}).join('');
+$('#psteps').innerHTML = stepsHTML(PSTEPS,'p');
+$('#ptext').textContent = PROMPT;
+
+/* ── blueprint chart ── */
+(function(){
+  var c = [190,104], pts = [[30,26],[82,18],[136,30],[244,30],[298,18],[350,26],[22,96],[358,96],[30,166],[84,174],[138,160],[242,160],[296,174],[350,166],[70,70],[310,70],[76,128],[304,128]], h = '';
+  pts.forEach(function(p){ h += '<path class="ln" pathLength="1" d="M'+p[0]+' '+p[1]+'L'+c[0]+' '+c[1]+'"/>'; });
+  pts.forEach(function(p){ h += '<rect class="nd" x="'+(p[0]-11)+'" y="'+(p[1]-7)+'" width="22" height="14" rx="2" fill="#23409a"/>'; });
+  h += '<circle class="core" cx="190" cy="104" r="19"/><path class="crack" d="M184 86l6 9-7 6 9 7-5 12M192 101l12-5"/>';
+  $('#chart').innerHTML = h;
+})();
+
+/* ── render ── */
+var lastTier = -1, lastTouched = false;
+function setCtr(el, n){
+  var st = $$('.strip', el);
+  st[0].style.setProperty('--d', Math.floor(n/10));
+  st[1].style.setProperty('--d', n%10);
+}
+function mix(a,b,t){ return Math.round(a + (b-a)*t); }
+function render(){
+  var n = score(), t = tierOf(n), k = n/10;
+  var g = [141,143,138], o = [107,127,58];
+  var c = [mix(g[0],o[0],k), mix(g[1],o[1],k), mix(g[2],o[2],k)];
+  var root = document.documentElement;
+  root.style.setProperty('--skin','rgb('+c.join(',')+')');
+  root.style.setProperty('--skin-dark','rgb('+c.map(function(v){return Math.round(v*.72)}).join(',')+')');
+  root.setAttribute('data-low', n <= 4 ? '1' : '0');
+  $$('[data-q]').forEach(function(inp){
+    var on = !!state.q[+inp.getAttribute('data-q')];
+    inp.checked = on; inp.closest('.q').classList.toggle('on', on);
+  });
+  $$('.fl').forEach(function(f){ f.classList.toggle('on', !!state.q[+f.getAttribute('data-f') - 1]); });
+  $$('[data-ctr]').forEach(function(el){ setCtr(el, n); });
+  var v = $('#verdict');
+  if(state.touched){
+    v.textContent = TIERS[t]; v.classList.remove('blank');
+    if(t !== lastTier || !lastTouched){ v.classList.remove('land'); void v.offsetWidth; v.classList.add('land'); }
+    $$('#tiers li').forEach(function(li){ li.classList.toggle('act', +li.getAttribute('data-t') === t); });
+    $('#live').textContent = n + ' מתוך 10 · ' + TIERS[t];
+  }
+  lastTier = t; lastTouched = state.touched;
+  $('#wa').href = waLink(n);
+  $$('[data-s]').forEach(function(inp){ inp.checked = !!state.s[inp.getAttribute('data-s')]; });
+  $$('[data-fix]').forEach(function(a){
+    var p = a.getAttribute('data-fix');
+    a.classList.toggle('fin', !!(state.s[p+'-1'] && state.s[p+'-2'] && state.s[p+'-3']));
+  });
+}
+document.addEventListener('change', function(e){
+  var el = e.target;
+  if(el.hasAttribute && el.hasAttribute('data-q')){
+    state.q[+el.getAttribute('data-q')] = el.checked ? 1 : 0; state.touched = true;
+    var w = $('#walker'); w.classList.remove('hop'); void w.offsetWidth; w.classList.add('hop');
+  } else if(el.hasAttribute && el.hasAttribute('data-s')){
+    state.s[el.getAttribute('data-s')] = el.checked ? 1 : 0;
+  } else return;
+  save(); render();
+});
+
+/* ── copy ── */
+$('#copy').addEventListener('click', function(){
+  var b = this;
+  function ok(){ b.textContent = 'הועתק'; b.classList.add('ok'); clearTimeout(b._t); b._t = setTimeout(function(){ b.textContent = 'העתק פרומפט'; b.classList.remove('ok'); }, 2200); }
+  function fallback(){
+    var done = false;
+    try{
+      var ta = document.createElement('textarea'); ta.value = PROMPT; ta.setAttribute('readonly','');
+      ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0'; document.body.appendChild(ta); ta.select(); ta.setSelectionRange(0, PROMPT.length);
+      done = document.execCommand('copy'); document.body.removeChild(ta);
+    }catch(e){}
+    if(done) ok();
+    else { try{ var r = document.createRange(); r.selectNodeContents($('#ptext')); var s = getSelection(); s.removeAllRanges(); s.addRange(r); }catch(e){} }
+  }
+  try{
+    if(navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(PROMPT).then(ok, fallback);
+    else fallback();
+  }catch(e){ fallback(); }
+});
+
+/* ── reel link ── */
+if(REEL_URL){ $('#reel').href = REEL_URL; $('#reelrow').hidden = false; }
+
+/* ── in-page jumps ── */
+document.addEventListener('click', function(e){
+  var a = e.target.closest && e.target.closest('a[href^="#"]');
+  if(!a) return;
+  var t = document.getElementById(a.getAttribute('href').slice(1));
+  if(!t) return;
+  e.preventDefault();
+  t.scrollIntoView({behavior: REDUCED ? 'auto' : 'smooth', block:'start'});
+});
+
+/* ── branch, walker, worlds ── */
+var track = $('#track'), walker = $('#walker'), bar = $('#bar'), worlds = $$('[data-world]').filter(function(el){return el !== bar}), walkT;
+function maxScroll(){ return Math.max(1, document.documentElement.scrollHeight - window.innerHeight); }
+function placeKnots(){
+  var span = track.clientWidth - walker.offsetWidth, ms = maxScroll();
+  $$('.knot').forEach(function(k){
+    var el = document.getElementById(k.getAttribute('data-k'));
+    var p = Math.min(1, Math.max(0, (el.getBoundingClientRect().top + window.pageYOffset) / ms));
+    k.style.right = (p*span + walker.offsetWidth/2 - 11) + 'px';
+  });
+}
+function onScroll(){
+  var p = Math.min(1, Math.max(0, window.pageYOffset / maxScroll()));
+  walker.style.transform = 'translateX(' + (-p * (track.clientWidth - walker.offsetWidth)) + 'px)';
+  var y = window.innerHeight - 60, w = 'night';
+  worlds.forEach(function(el){ var r = el.getBoundingClientRect(); if(r.top <= y && r.bottom > y) w = el.getAttribute('data-world'); });
+  bar.setAttribute('data-world', w);
+}
+var ticking = false, hasMouse = false;
+window.addEventListener('scroll', function(){
+  if(!REDUCED){ walker.classList.add('walking'); clearTimeout(walkT); walkT = setTimeout(function(){ walker.classList.remove('walking'); }, 180); }
+  if(ticking) return; ticking = true;
+  requestAnimationFrame(function(){ ticking = false; onScroll(); if(!hasMouse) look(window.innerWidth/2, window.innerHeight*.42); });
+}, {passive:true});
+window.addEventListener('resize', function(){ placeKnots(); onScroll(); });
+window.addEventListener('load', function(){ placeKnots(); onScroll(); });
+
+/* ── the eye follows ── */
+function look(x, y){
+  chams.forEach(function(c){
+    var r = c.getBoundingClientRect();
+    if(r.bottom < -50 || r.top > window.innerHeight + 50 || !r.width) return;
+    var dx = x - (r.left + r.width*.26), dy = y - (r.top + r.height*.45), d = Math.sqrt(dx*dx + dy*dy) || 1, m = Math.min(1, d/50) * 5.5;
+    c.style.setProperty('--px', (dx/d*m).toFixed(2) + 'px');
+    c.style.setProperty('--py', (dy/d*m).toFixed(2) + 'px');
+  });
+}
+var lookRaf = 0;
+function onPoint(e){
+  if(e.pointerType === 'mouse') hasMouse = true;
+  var x = e.clientX, y = e.clientY;
+  if(lookRaf) return;
+  lookRaf = requestAnimationFrame(function(){ lookRaf = 0; look(x, y); });
+}
+window.addEventListener('pointermove', onPoint, {passive:true});
+window.addEventListener('pointerdown', onPoint, {passive:true});
+
+/* ── blueprint lines draw themselves when reached ── */
+(function(){
+  var ch = $('#chart');
+  if(REDUCED || !('IntersectionObserver' in window)) return;
+  ch.classList.add('pre');
+  var io = new IntersectionObserver(function(es){ es.forEach(function(en){ if(en.isIntersecting){ ch.classList.add('in'); ch.classList.remove('pre'); io.disconnect(); } }); }, {threshold:.25});
+  io.observe(ch);
+})();
+
+render(); placeKnots(); onScroll();
+window.__zikit = {score:score, waLink:waLink, state:state};
+})();
+</script>
+</body>
+</html>
